@@ -2,9 +2,50 @@
 
 import React, { useState } from "react";
 import { Database, Copy, Check, ExternalLink, ShieldCheck, KeyRound, Sparkles } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
+
+const SQL_SCHEMA = `-- Daily Expense Tracker Supabase Schema
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS public.expenses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    category TEXT NOT NULL,
+    note TEXT DEFAULT '',
+    expense_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.budgets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+    month TEXT NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_user_month_budget UNIQUE (user_id, month)
+);
+
+CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON public.expenses (user_id, expense_date DESC);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON public.expenses (user_id, category);
+CREATE INDEX IF NOT EXISTS idx_budgets_user_month ON public.budgets (user_id, month);
+
+ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.budgets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own expenses" ON public.expenses FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their own expenses" ON public.expenses FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own expenses" ON public.expenses FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own expenses" ON public.expenses FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own budgets" ON public.budgets FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their own budgets" ON public.budgets FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own budgets" ON public.budgets FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own budgets" ON public.budgets FOR DELETE USING (auth.uid() = user_id);`;
 
 export function SetupGuide() {
-  const [copied, setCopied] = useState<boolean>(false);
+  const [copiedEnv, setCopiedEnv] = useState<boolean>(false);
+  const [copiedSql, setCopiedSql] = useState<boolean>(false);
 
   const sampleEnv = `# In your .env.local file:
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
@@ -14,12 +55,23 @@ GOOGLE_SHEET_WEBHOOK_URL=https://script.google.com/macros/s/.../exec`;
 
   const copyEnvSnippet = () => {
     navigator.clipboard.writeText(sampleEnv);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setCopiedEnv(true);
+    setTimeout(() => setCopiedEnv(false), 2500);
+  };
+
+  const copySqlSchema = () => {
+    navigator.clipboard.writeText(SQL_SCHEMA);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2500);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-100 dark:from-slate-950 dark:via-indigo-950/20 dark:to-slate-900">
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-100 dark:from-slate-950 dark:via-indigo-950/20 dark:to-slate-900 relative">
+      {/* Top right theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
       <div className="max-w-2xl w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
         {/* Glow decorative background */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -64,7 +116,7 @@ GOOGLE_SHEET_WEBHOOK_URL=https://script.google.com/macros/s/.../exec`;
                   </a>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Go to supabase.com, sign in and click <strong>New Project</strong>. Choose any name and password.
+                  Go to supabase.com, sign in and click <strong>New Project</strong>. Choose any project name and secure database password.
                 </p>
               </div>
             </div>
@@ -75,13 +127,21 @@ GOOGLE_SHEET_WEBHOOK_URL=https://script.google.com/macros/s/.../exec`;
                 2
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  Run Database Schema (supabase/schema.sql)
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    Run Database Schema (supabase/schema.sql)
+                  </h3>
+                  <button
+                    onClick={copySqlSchema}
+                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
+                  >
+                    {copiedSql ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedSql ? "Copied SQL" : "Copy SQL"}
+                  </button>
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Open the <strong>SQL Editor</strong> in your Supabase dashboard and run the SQL code from{" "}
-                  <code className="text-indigo-600 dark:text-indigo-400 font-mono">supabase/schema.sql</code>. It creates the expenses &amp; budgets tables with Row Level Security.
+                  Open the <strong>SQL Editor</strong> in Supabase dashboard and run the SQL code from <code className="text-indigo-600 dark:text-indigo-400 font-mono">supabase/schema.sql</code>. It creates the expenses &amp; budgets tables with Row Level Security.
                 </p>
               </div>
             </div>
@@ -96,7 +156,7 @@ GOOGLE_SHEET_WEBHOOK_URL=https://script.google.com/macros/s/.../exec`;
                   Turn off Email Confirmation (For Instant Testing)
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Under <strong>Authentication &rarr; Providers &rarr; Email</strong>, disable &ldquo;Confirm email&rdquo; so you can sign up and log in immediately without waiting for an email link.
+                  Under <strong>Authentication &rarr; Providers &rarr; Email</strong>, toggle off &ldquo;Confirm email&rdquo; so you can sign up and log in immediately without waiting for an email link.
                 </p>
               </div>
             </div>
@@ -116,8 +176,8 @@ GOOGLE_SHEET_WEBHOOK_URL=https://script.google.com/macros/s/.../exec`;
                     onClick={copyEnvSnippet}
                     className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? "Copied" : "Copy Template"}
+                    {copiedEnv ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedEnv ? "Copied" : "Copy Template"}
                   </button>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
