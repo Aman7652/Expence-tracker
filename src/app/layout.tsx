@@ -10,10 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kharcha - Daily Expense Tracker (INR ₹)",
+  title: "Expense Tracker - Daily Expense Tracker (INR ₹)",
   description: "Production-ready, mobile-first daily expense tracker web app with Supabase, Recharts, and Google Sheets sync.",
-  keywords: ["expense tracker", "budget tracker", "kharcha", "money manager", "INR", "indian rupee"],
-  authors: [{ name: "Kharcha Team" }],
+  keywords: ["expense tracker", "budget tracker", "money manager", "INR", "indian rupee"],
+  authors: [{ name: "Expense Tracker Team" }],
   icons: {
     icon: "/favicon.ico",
   },

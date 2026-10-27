@@ -1,8 +1,8 @@
-# Kharcha - Daily Expense Tracker (INR ₹)
+# Expense Tracker - Daily Expense Tracker (INR ₹)
 
 A production-ready, mobile-first Daily Expense Tracker web app built with Next.js (App Router), TypeScript, Tailwind CSS, Supabase Auth & Postgres, Recharts, and Google Sheets webhook sync.
 
-![Kharcha Tracker Banner](https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80)
+![Expense Tracker Banner](https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80)
 
 ---
 
@@ -47,7 +47,7 @@ A production-ready, mobile-first Daily Expense Tracker web app built with Next.j
 
 ### 1. Create Supabase Project
 1. Go to [Supabase](https://supabase.com/) and sign in.
-2. Click **New Project**, choose an organization, project name (e.g. `kharcha-tracker`), and a strong database password.
+2. Click **New Project**, choose an organization, project name (e.g. `expense-tracker`), and a strong database password.
 3. Wait ~1-2 minutes for the database to provision.
 
 ### 2. Run Database Schema

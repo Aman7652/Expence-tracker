@@ -85,7 +85,7 @@ GOOGLE_SHEET_WEBHOOK_URL=https://script.google.com/macros/s/.../exec`;
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  Welcome to Kharcha Tracker
+                  Welcome to Expense Tracker
                 </h1>
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 font-medium border border-indigo-200 dark:border-indigo-800">
                   Initial Setup

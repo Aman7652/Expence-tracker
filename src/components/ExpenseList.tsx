@@ -96,7 +96,7 @@ export function ExpenseList({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Kharcha_Expenses_${currentMonth}.csv`);
+    link.setAttribute("download", `Expenses_${currentMonth}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
